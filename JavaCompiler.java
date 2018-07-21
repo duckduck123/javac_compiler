@@ -133,7 +133,7 @@ public class JavaCompiler implements ClassReader.SourceCompleter {
      * are connected. Each individual file is processed by each phase in turn,
      * but with different compile policies, you can control the order in which
      * each class is processed through its next phase.
-     * 编译过程中的各个阶段 attr:属性分析(或称语义分析)、flow:数据流分析、desugar:解除语法糖、generate:生成字节码
+     * 编译过程中的各个阶段 attr:属性分析(或称语义分析)、flow:数据流分析、desugar:解语法糖、generate:生成字节码
      * 可以使用不同的编译策略控制每个类在其下一个阶段中处理的顺序
      * <p>Generally speaking, the compiler will "fail fast" in the face of
      * errors, although not aggressively so. flow, desugar, etc become no-ops
@@ -144,7 +144,7 @@ public class JavaCompiler implements ClassReader.SourceCompleter {
     protected static enum CompilePolicy {
         /**
          * Just attribute the parse trees.
-         * 为解析树赋予属性
+         * 根据属性生成树
          */
         ATTR_ONLY,
 
@@ -161,7 +161,7 @@ public class JavaCompiler implements ClassReader.SourceCompleter {
          * then desugar everything, and only then generate output.
          * This means no output will be generated if there are any
          * errors in any classes.
-         * 根据属性的所有内容进行流分析，然后解除语法糖，然后生成输出。如果任何类中有任何错误，都不会生成输出
+         * 根据属性的所有内容进行流分析，然后解语法糖，然后生成输出。如果任何类中有任何错误，都不会生成输出
          */
         SIMPLE,
 
@@ -911,7 +911,7 @@ public class JavaCompiler implements ClassReader.SourceCompleter {
                     /*
                      * attribute:   {过程3.1:属性分析(或称语义分析)}
                      * flow:        {过程3.2:数据流分析}
-                     * desugar:     {过程3.3:解除语法糖}
+                     * desugar:     {过程3.3:解语法糖}
                      * generate:    {过程3.4:生成字节码}
                      */
                     Queue<Queue<Env<AttrContext>>> q = todo.groupByFile();
