@@ -870,32 +870,6 @@ public class JavaCompiler implements ClassReader.SourceCompleter {
              * enterTrees:{过程1.2：输入到符号表}
              * processAnnotations:{过程2：执行注解处理}
              * delegateCompiler.compile2:{过程3：分析及字节码生成} 详细参照compile2方法内注释
-             *
-             * 上面的英文注释提到：这些方法调用必须链接起来以避免内存泄漏
-             * 为什么呢？以下是我从jvm优化方面的分析：
-             * 方法parseFiles、enterTrees的返回值都是List<JCCompilationUnit>类型
-             * 而方法parseFiles、enterTrees、processAnnotations都需要一个List<JCCompilationUnit>类型的参数
-             * 我们知道
-             * 1.“参数”是放在方法栈帧的局部变量表里的(如果是对象的话就是引用存在局部变量表里)
-             * 2.方法的返回值(如果是对象的话就是引用)在方法返回之前要压在栈顶留给调用它的函数使用的
-             * 3.jvm会不会考虑做这样的优化：一个“方法”的返回值和“调用它的方法”的局部变量表共用着相同一块内存来存放
-             *      List<JCCompilationUnit>类型的数据的引用(这个数据分别是“方法”的返回值和“调用它的方法”的参数)
-             *
-             * 关于上面的疑问我请教了淘宝的大牛---“莫枢（撒迦）”他给了我以下回复：
-             *
-             * 看Mercurial的版本记录可以知道那行注释在OpenJDK代码库最初创建时就已经是那个样子的了。
-             * 这么年代的代码想找最初的出处都找不出来了。
-             * 硬要猜的话，它原本的思路应该是这样的：那些嵌套的方法，每个内层调用的返回值都是外一层调用的参数；
-             * 那么不赋值给显式声明的局部变量可以减少这些返回了然后又马上被当作参数传下去的引用的作用域
-             *
-             * 那行注释在Sun JDK上只对解释器中跑这段代码有意义，如果这段代码被编译(fengjc注：是指JIT编译)了就没啥意义了。
-             * 不过因为这段代码实际上在相当靠近“顶层”的地方，执行次数确实会比较少因而很可能一直在解
-             * 释器里跑，所以这段注释仍然有意义。
-             *
-             * 你的分析可以是可以，但你得知道HotSpot VM在x86上并不是这么做的，其它JVM实现可以有别的选
-             * 择。在x86上HotSpot VM在caller一侧总是用EAX寄存器来返回值（x64上用RAX，同理），而在
-             * caller一侧如果是在解释器里跑那么返回值会放在栈顶，如果caller是编译后的代码那返回值就在
-             * EAX（或RAX）里。
              */
             delegateCompiler =
                 processAnnotations(
